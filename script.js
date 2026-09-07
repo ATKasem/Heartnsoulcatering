@@ -1,3 +1,6 @@
+// Progressive enhancement flag (gates carousel CSS; without JS, .tg stays a stacked grid)
+document.documentElement.classList.add('js');
+
 // Mobile nav
 const h=document.getElementById('hm'),n=document.getElementById('nk');
 if(h&&n){
@@ -35,4 +38,38 @@ document.querySelectorAll('.rv,.rvl,.rvr,.rvs').forEach(e=>obs.observe(e));
 document.querySelectorAll('#sg,#gg').forEach(g=>{
   const i=g.querySelectorAll('.rvs');
   if(i.length){new IntersectionObserver((e)=>{if(e.some(e=>e.isIntersecting)){i.forEach((e,t)=>setTimeout(()=>e.classList.add('v'),80+t*60));obs.unobserve(g)}},{threshold:.05}).observe(g)}
+});
+
+// Review carousel(s): one card at a time on mobile, up to 3 at a time on desktop
+document.querySelectorAll('.tgw').forEach(wrap=>{
+  const track=wrap.querySelector('.tg');
+  const prevBtn=wrap.querySelector('.tgb-prev');
+  const nextBtn=wrap.querySelector('.tgb-next');
+  const status=wrap.querySelector('.tgs');
+  if(!track||!prevBtn||!nextBtn||!status)return;
+  const cards=[...track.children];
+  if(!cards.length)return;
+  let index=0;
+
+  const perView=()=>window.innerWidth>=860?Math.min(3,cards.length):1;
+  const maxIndex=()=>Math.max(0,cards.length-perView());
+
+  function update(){
+    const pv=perView();
+    index=Math.min(index,maxIndex());
+    const offset=cards[index].offsetLeft;
+    track.style.transform=`translateX(-${offset}px)`;
+    cards.forEach((c,i)=>{
+      c.setAttribute('aria-hidden',(i<index||i>=index+pv)?'true':'false');
+    });
+    prevBtn.disabled=index===0;
+    nextBtn.disabled=index>=maxIndex();
+    const last=Math.min(index+pv,cards.length);
+    status.textContent=pv>1?`Showing reviews ${index+1} to ${last} of ${cards.length}`:`Showing review ${index+1} of ${cards.length}`;
+  }
+
+  prevBtn.addEventListener('click',()=>{index=Math.max(0,index-1);update()});
+  nextBtn.addEventListener('click',()=>{index=Math.min(maxIndex(),index+1);update()});
+  window.addEventListener('resize',update);
+  update();
 });

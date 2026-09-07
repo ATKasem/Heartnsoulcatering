@@ -126,6 +126,19 @@
     .tcd .tn{font-size:.82rem;font-weight:600;color:var(--brown);display:block}
     .tcd .tl{font-size:.72rem;color:var(--text-light)}
 
+    /* ═══ TESTIMONIAL CAROUSEL (progressive enhancement; .tg stays a stacked grid without JS) ═══ */
+    .tgw{position:relative}
+    .tgv{overflow:hidden}
+    .js #tg{display:flex;flex-wrap:nowrap;transition:transform .5s cubic-bezier(.16,1,.3,1)}
+    .js .tcd{flex:0 0 100%}
+    @media(min-width:860px){.js .tcd{flex:0 0 calc((100% - 48px)/3)}}
+    .tgc{display:none;align-items:center;justify-content:center;gap:20px;margin-top:24px}
+    .js .tgc{display:flex}
+    .tgb{min-width:44px;min-height:44px;padding:10px 22px;background:var(--white);border:1px solid rgba(0,0,0,.08);border-radius:100px;font-family:var(--font-b);font-size:.82rem;font-weight:500;color:var(--brown);cursor:pointer;transition:all .3s}
+    .tgb:hover:not(:disabled){background:var(--gold-pale);border-color:var(--gold)}
+    .tgb:disabled{opacity:.4;cursor:not-allowed}
+    .tgs{font-size:.78rem;color:var(--text-light);min-width:140px;text-align:center}
+
     /* ═══ CONTACT ═══ */
     .cg{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:48px}
     .cc{background:var(--white);border-radius:var(--rl);padding:36px;border:1px solid rgba(0,0,0,.04);box-shadow:var(--s)}
@@ -211,4 +224,5 @@
     @media(prefers-reduced-motion:reduce){
       *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
       .rv,.rvl,.rvr,.rvs{opacity:1!important;transform:none!important}
+      .js #tg{transition:none!important}
     }
