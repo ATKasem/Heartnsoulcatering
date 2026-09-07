@@ -41,6 +41,9 @@ document.querySelectorAll('#sg,#gg').forEach(g=>{
 });
 
 // Review carousel(s): one card at a time on mobile, up to 3 at a time on desktop
+// Auto-advances every 5s; manual Prev/Next stay bounded (matching their disabled-state UX)
+// while auto-advance loops last->first like a normal carousel.
+const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
 document.querySelectorAll('.tgw').forEach(wrap=>{
   const track=wrap.querySelector('.tg');
   const prevBtn=wrap.querySelector('.tgb-prev');
@@ -50,10 +53,12 @@ document.querySelectorAll('.tgw').forEach(wrap=>{
   const cards=[...track.children];
   if(!cards.length)return;
   let index=0;
+  let hovered=false,focused=false,timer=null;
   wrap.classList.add('carousel-ready');
 
   const perView=()=>window.innerWidth>=860?Math.min(3,cards.length):1;
   const maxIndex=()=>Math.max(0,cards.length-perView());
+  const canAutoplay=()=>!reduceMotion.matches&&!hovered&&!focused&&!document.hidden&&maxIndex()>0;
 
   function update(){
     const pv=perView();
@@ -70,13 +75,42 @@ document.querySelectorAll('.tgw').forEach(wrap=>{
     status.textContent=pv>1?`Showing reviews ${index+1} to ${last} of ${cards.length}`:`Showing review ${index+1} of ${cards.length}`;
   }
 
-  prevBtn.addEventListener('click',()=>{index=Math.max(0,index-1);update()});
-  nextBtn.addEventListener('click',()=>{index=Math.min(maxIndex(),index+1);update()});
+  function stopAutoplay(){
+    if(timer){clearInterval(timer);timer=null}
+  }
+  function startAutoplay(){
+    if(timer||!canAutoplay())return;
+    timer=setInterval(()=>{
+      index=(index+1)%(maxIndex()+1);
+      update();
+    },5000);
+  }
+  function resetAutoplay(){
+    stopAutoplay();
+    startAutoplay();
+  }
+
+  prevBtn.addEventListener('click',()=>{index=Math.max(0,index-1);update();resetAutoplay()});
+  nextBtn.addEventListener('click',()=>{index=Math.min(maxIndex(),index+1);update();resetAutoplay()});
   wrap.addEventListener('keydown',e=>{
     if(e.target!==wrap)return;
-    if(e.key==='ArrowLeft'){e.preventDefault();index=Math.max(0,index-1);update()}
-    if(e.key==='ArrowRight'){e.preventDefault();index=Math.min(maxIndex(),index+1);update()}
+    if(e.key==='ArrowLeft'){e.preventDefault();index=Math.max(0,index-1);update();resetAutoplay()}
+    if(e.key==='ArrowRight'){e.preventDefault();index=Math.min(maxIndex(),index+1);update();resetAutoplay()}
   });
-  window.addEventListener('resize',update);
+  wrap.addEventListener('mouseenter',()=>{hovered=true;stopAutoplay()});
+  wrap.addEventListener('mouseleave',()=>{hovered=false;startAutoplay()});
+  wrap.addEventListener('focusin',()=>{focused=true;stopAutoplay()});
+  wrap.addEventListener('focusout',()=>{focused=false;startAutoplay()});
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden)stopAutoplay();else startAutoplay();
+  });
+  reduceMotion.addEventListener('change',()=>{
+    if(reduceMotion.matches)stopAutoplay();else startAutoplay();
+  });
+  window.addEventListener('resize',()=>{
+    update();
+    if(canAutoplay())startAutoplay();else stopAutoplay();
+  });
   update();
+  startAutoplay();
 });
