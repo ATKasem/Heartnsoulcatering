@@ -50,6 +50,7 @@ document.querySelectorAll('.tgw').forEach(wrap=>{
   const cards=[...track.children];
   if(!cards.length)return;
   let index=0;
+  wrap.classList.add('carousel-ready');
 
   const perView=()=>window.innerWidth>=860?Math.min(3,cards.length):1;
   const maxIndex=()=>Math.max(0,cards.length-perView());
@@ -57,6 +58,7 @@ document.querySelectorAll('.tgw').forEach(wrap=>{
   function update(){
     const pv=perView();
     index=Math.min(index,maxIndex());
+    wrap.classList.toggle('carousel-static',maxIndex()===0);
     const offset=cards[index].offsetLeft;
     track.style.transform=`translateX(-${offset}px)`;
     cards.forEach((c,i)=>{
@@ -70,6 +72,11 @@ document.querySelectorAll('.tgw').forEach(wrap=>{
 
   prevBtn.addEventListener('click',()=>{index=Math.max(0,index-1);update()});
   nextBtn.addEventListener('click',()=>{index=Math.min(maxIndex(),index+1);update()});
+  wrap.addEventListener('keydown',e=>{
+    if(e.target!==wrap)return;
+    if(e.key==='ArrowLeft'){e.preventDefault();index=Math.max(0,index-1);update()}
+    if(e.key==='ArrowRight'){e.preventDefault();index=Math.min(maxIndex(),index+1);update()}
+  });
   window.addEventListener('resize',update);
   update();
 });
