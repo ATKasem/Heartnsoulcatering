@@ -1,8 +1,13 @@
 // Mobile nav
 const h=document.getElementById('hm'),n=document.getElementById('nk');
 if(h&&n){
-  h.addEventListener('click',()=>{h.classList.toggle('a');n.classList.toggle('o')});
-  document.querySelectorAll('.nk a').forEach(l=>l.addEventListener('click',()=>{h.classList.remove('a');n.classList.remove('o')}));
+  const openMenu=()=>{h.classList.add('a');n.classList.add('o');h.setAttribute('aria-expanded','true')};
+  const closeMenu=()=>{h.classList.remove('a');n.classList.remove('o');h.setAttribute('aria-expanded','false')};
+  h.addEventListener('click',()=>{h.classList.contains('a')?closeMenu():openMenu()});
+  document.querySelectorAll('.nk a').forEach(l=>l.addEventListener('click',closeMenu));
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='Escape'&&h.classList.contains('a')){closeMenu();h.focus()}
+  });
 }
 
 // Nav scroll
@@ -14,8 +19,9 @@ window.addEventListener('scroll',()=>{
 
 // Active page highlighting
 (()=>{
-  let path=location.pathname.split('/').pop();
-  if(path===''||path==='/')path='index.html';
+  let path=location.pathname.replace(/index\.html?$/,'').replace(/\.html$/,'');
+  if(path.length>1&&path.endsWith('/'))path=path.slice(0,-1);
+  if(path==='')path='/';
   document.querySelectorAll('.nk a[data-page]').forEach(a=>{
     if(a.getAttribute('data-page')===path)a.classList.add('active');
   });
